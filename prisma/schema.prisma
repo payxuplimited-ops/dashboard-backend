@@ -1,0 +1,49 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  // Esta línea le dice a Prisma dónde generar el cliente
+  // He corregido la ruta a '.prisma/client' como sugiere el error
+  output   = "../backend/node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id        String    @id @default(cuid())
+  nombre    String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  usuarios  Usuario[]
+  medicos   Medico[]
+}
+
+model Usuario {
+  id       String @id @default(cuid())
+  email    String @unique
+  password String
+  rol      String
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
+}
+
+model Medico {
+  id           String @id @default(cuid())
+  nombre       String
+  especialidad String
+  tenantId     String
+  tenant       Tenant @relation(fields: [tenantId], references: [id])
+  citas        Cita[]
+}
+
+model Cita {
+  id       String   @id @default(cuid())
+  fecha    DateTime
+  paciente String
+  medicoId String
+  medico   Medico   @relation(fields: [medicoId], references: [id])
+}
